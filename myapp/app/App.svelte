@@ -1,5 +1,7 @@
+<!-- not sure if i should have multiple habits or focus on weighing reward with ratio of goods/bads -->
+
 <page>
-    <actionBar title="My Tasks" />
+    <actionBar title="Habit App" />
 
     <tabs tabsPosition="bottom">
             <tabStrip>
@@ -36,27 +38,52 @@
     import { Template } from 'svelte-native/components';
     import * as AppSettings from '@nativescript/core/application-settings'
 
-    let todos;
-    if(AppSettings.getString("todos")){
-        todos = JSON.parse(AppSettings.getString("todos"));
+    let habits;
+    if(AppSettings.getString("habits")){
+        habits = JSON.parse(AppSettings.getString("habits"));
     }else{
-        todos = [];
+        habits = {};
+        //and tutorial/setting up first habit
     }
+
+    function addHabit(name){
+        if(habits[name]){
+             name = name + " the Sequel";
+        }
+        habits[name] = [0,0];
+        AppSettings.setString("habits", JSON.stringify(habits));
+    }
+
+    function deleteHabit(name){
+        delete habits[name];
+        AppSettings.setString("habits", JSON.stringify(habits));
+    }
+
+    function changeHabitName(oldName, newName){
+        if(habits[newName]){
+             newName = newName + " the Sequel";
+        }
+        habits[newName] = habits[oldName];
+        delete habits[oldName];
+        AppSettings.setString("habits", JSON.stringify(habits));
+    }
+
+    function goodHabit(name){
+        ///celebratory sound!
+        habits[name][0]++;
+        AppSettings.setString("habits", JSON.stringify(habits));
+    }
+
+    function badHabit(name){
+        //are you sure?? checks
+        //sadish sound
+        habits[name][1]--;
+        AppSettings.setString("habits", JSON.stringify(habits));
+    }
+
     
-    let dones; //completed items go here
-    if(AppSettings.getString("dones")){
-            dones = JSON.parse(AppSettings.getString("dones"))
-    }else{
-        dones = [];
-    }
 
-    const removeFromList = (list, item) => list.filter(t => t !== item);
-    const addToList = (list, item) => [item, ...list];
-
-    let textFieldValue = "";
-
-
-    async function onItemTap(args) {
+    async function onEditTap(args) {
 		let result = await action("What do you want to do with this task?", "Cancel", [
 				"Mark completed",
 				"Delete forever"
